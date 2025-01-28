@@ -9,6 +9,8 @@ provider:
   region: ${opt:region, 'us-east-1'}
   environment:
     NODE_ENV: ${self:provider.stage}
+    USER_POOL_ID: !Ref CognitoUserPool
+    USER_POOL_CLIENT_ID: !Ref CognitoUserPoolClient
 
 plugins:
   - serverless-offline
@@ -21,10 +23,110 @@ package:
     - '!.env'
     - '!README.md'
 
+resources:
+  Resources:
+    CognitoUserPool:
+      Type: AWS::Cognito::UserPool
+      Properties:
+        UserPoolName: ${self:service}-${self:provider.stage}-user-pool
+        UsernameAttributes:
+          - email
+        AutoVerifiedAttributes:
+          - email
+        Policies:
+          PasswordPolicy:
+            MinimumLength: 8
+            RequireLowercase: true
+            RequireNumbers: true
+            RequireSymbols: true
+            RequireUppercase: true
+
+    CognitoUserPoolClient:
+      Type: AWS::Cognito::UserPoolClient
+      Properties:
+        ClientName: ${self:service}-${self:provider.stage}-user-pool-client
+        UserPoolId: !Ref CognitoUserPool
+        ExplicitAuthFlows:
+          - ALLOW_USER_PASSWORD_AUTH
+          - ALLOW_USER_SRP_AUTH
+          - ALLOW_REFRESH_TOKEN_AUTH
+        GenerateSecret: false
+
 functions:
   hello:
     handler: src/handlers/hello.handler
     events:
       - http:
           path: /hello
-          method: get 
+          method: get
+          authorizer:
+            name: cognitoAuthorizer
+            type: COGNITO_USER_POOLS
+            arn: !GetAtt CognitoUserPool.Arn
+
+  create:
+    handler: src/handlers/create.handler
+    events:
+      - http:
+          path: /items
+          method: post
+          authorizer:
+            name: cognitoAuthorizer
+            type: COGNITO_USER_POOLS
+            arn: !GetAtt CognitoUserPool.Arn
+
+  read:
+    handler: src/handlers/read.handler
+    events:
+      - http:
+          path: /items/{id}
+          method: get
+          authorizer:
+            name: cognitoAuthorizer
+            type: COGNITO_USER_POOLS
+            arn: !GetAtt CognitoUserPool.Arn
+
+  update:
+    handler: src/handlers/update.handler
+    events:
+      - http:
+          path: /items/{id}
+          method: put
+          authorizer:
+            name: cognitoAuthorizer
+            type: COGNITO_USER_POOLS
+            arn: !GetAtt CognitoUserPool.Arn
+
+  delete:
+    handler: src/handlers/delete.handler
+    events:
+      - http:
+          path: /items/{id}
+          method: delete
+          authorizer:
+            name: cognitoAuthorizer
+            type: COGNITO_USER_POOLS
+            arn: !GetAtt CognitoUserPool.Arn
+
+  list:
+    handler: src/handlers/list.handler
+    events:
+      - http:
+          path: /items
+          method: get
+          authorizer:
+            name: cognitoAuthorizer
+            type: COGNITO_USER_POOLS
+            arn: !GetAtt CognitoUserPool.Arn
+
+  auth:
+    handler: src/handlers/auth.handler
+    events:
+      - http:
+          path: /auth/signup
+          method: post
+          cors: true
+      - http:
+          path: /auth/signin
+          method: post
+          cors: true 

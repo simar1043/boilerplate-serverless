@@ -9,7 +9,9 @@
     "deploy:prod": "serverless deploy --stage prod",
     "remove": "serverless remove"
   },
-  "dependencies": {},
+  "dependencies": {
+    "aws-sdk": "^2.1450.0"
+  },
   "devDependencies": {
     "serverless": "^3.34.0",
     "serverless-dotenv-plugin": "^6.0.0",
@@ -17,5 +19,6 @@
   },
   "engines": {
     "node": ">=18.0.0"
-  }
+  },
+  "type": "module"
 } 

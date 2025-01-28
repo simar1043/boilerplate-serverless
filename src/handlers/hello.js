@@ -1,14 +1,7 @@
-const response = (statusCode, body) => ({
-  statusCode,
-  headers: {
-    'Content-Type': 'application/json',
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Credentials': true,
-  },
-  body: JSON.stringify(body),
-});
+import { response } from '../utils/response.js';
+import { requireAuth } from '../utils/auth.js';
 
-exports.handler = async (event) => {
+const helloHandler = async (event) => {
   try {
     return response(200, {
       message: 'Hello from Serverless!',
@@ -18,4 +11,6 @@ exports.handler = async (event) => {
     console.error('Error:', error);
     return response(500, { error: 'Internal Server Error' });
   }
-}; 
+};
+
+export const handler = requireAuth(helloHandler); 
