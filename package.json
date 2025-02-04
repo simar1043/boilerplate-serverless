@@ -1,23 +1,40 @@
 {
   "name": "serverless-boilerplate",
   "version": "1.0.0",
-  "description": "Serverless Framework Boilerplate",
-  "main": "index.js",
+  "description": "Serverless Framework Boilerplate with CRUD Operations",
+  "main": "handler.js",
   "scripts": {
+    "setup": "npm install && docker compose up -d",
     "start": "serverless offline start",
     "deploy": "serverless deploy",
     "deploy:prod": "serverless deploy --stage prod",
-    "remove": "serverless remove"
+    "remove": "serverless remove",
+    "dev": "serverless offline",
+    "dev:debug": "SLS_DEBUG=1 serverless offline start --stage dev",
+    "migrations": "node --loader ts-node/esm migrations/run-migrations.ts",
+    "lint": "eslint --fix",
+    "prettier": "prettier -w src"
   },
   "dependencies": {
-    "@aws-sdk/client-cognito-identity-provider": "^3.734.0"
+    "@aws-sdk/client-cognito-identity-provider": "^3.734.0",
+    "@aws-sdk/client-secrets-manager": "^3.651.1",
+    "pg": "^8.13.0"
   },
   "devDependencies": {
     "@types/aws-lambda": "^8.10.147",
     "@types/node": "^20.0.0",
+    "@types/pg": "^8.11.10",
+    "@typescript-eslint/eslint-plugin": "^7.1.0",
+    "@typescript-eslint/parser": "^7.1.0",
+    "eslint": "^8.57.0",
+    "eslint-config-prettier": "^9.1.0",
+    "eslint-plugin-prettier": "^5.2.1",
+    "prettier": "^3.3.3",
     "serverless": "^3.38.0",
     "serverless-dotenv-plugin": "^6.0.0",
-    "serverless-offline": "^13.3.0",
+    "serverless-esbuild": "^1.54.6",
+    "serverless-offline": "^13.9.0",
+    "serverless-openapi-documentation": "^0.4.0",
     "serverless-plugin-typescript": "^2.1.5",
     "typescript": "^5.0.0"
   },

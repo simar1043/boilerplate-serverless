@@ -1,4 +1,4 @@
-service: serverless-boilerplate
+service: api-boilerplate
 
 frameworkVersion: '3'
 
@@ -9,12 +9,35 @@ provider:
   region: ${opt:region, 'us-east-1'}
   environment:
     NODE_ENV: ${self:provider.stage}
+    POSTGRES_HOST: ${file(./src/config/${self:provider.stage}.config.json):postgresHost}
+    POSTGRES_PORT: ${file(./src/config/${self:provider.stage}.config.json):postgresPort}
+    POSTGRES_USER: ${file(./src/config/${self:provider.stage}.config.json):postgresUser}
+    POSTGRES_PASSWORD: ${file(./src/config/${self:provider.stage}.config.json):postgresPassword}
+    POSTGRES_DB: ${file(./src/config/${self:provider.stage}.config.json):postgresDB}
     USER_POOL_ID: !Ref CognitoUserPool
     USER_POOL_CLIENT_ID: !Ref CognitoUserPoolClient
 
+custom:
+  esbuild:
+    bundle: true
+    minify: true
+    sourcemap: true
+    exclude: ["aws-sdk"]
+    target: "node20"
+    define: { "require.resolve": undefined }
+    platform: 'node'
+    packager: 'npm'
+    external: ['pg']
+    concurrency: 10
+  documentation:
+    apiType: 'openapi_3'
+    openapi: ${file(./src/docs/openapi.yml)}
+
 plugins:
   - serverless-offline
+  - serverless-esbuild
   - serverless-dotenv-plugin
+  - serverless-openapi-documentation
 
 package:
   patterns:
@@ -22,6 +45,8 @@ package:
     - '!.git/**'
     - '!.env'
     - '!README.md'
+  individually: true
+  excludeDevDependencies: true
 
 resources:
   Resources:
@@ -52,81 +77,19 @@ resources:
           - ALLOW_REFRESH_TOKEN_AUTH
         GenerateSecret: false
 
+    LambdaExecutionRole:
+      Type: AWS::IAM::Role
+      Properties:
+        AssumeRolePolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Principal:
+                Service: lambda.amazonaws.com
+              Action: sts:AssumeRole
+        ManagedPolicyArns:
+          - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+          - arn:aws:iam::aws:policy/AmazonRDSDataFullAccess
+
 functions:
-  hello:
-    handler: src/handlers/hello.handler
-    events:
-      - http:
-          path: /hello
-          method: get
-          authorizer:
-            name: cognitoAuthorizer
-            type: COGNITO_USER_POOLS
-            arn: !GetAtt CognitoUserPool.Arn
-
-  create:
-    handler: src/handlers/create.handler
-    events:
-      - http:
-          path: /items
-          method: post
-          authorizer:
-            name: cognitoAuthorizer
-            type: COGNITO_USER_POOLS
-            arn: !GetAtt CognitoUserPool.Arn
-
-  read:
-    handler: src/handlers/read.handler
-    events:
-      - http:
-          path: /items/{id}
-          method: get
-          authorizer:
-            name: cognitoAuthorizer
-            type: COGNITO_USER_POOLS
-            arn: !GetAtt CognitoUserPool.Arn
-
-  update:
-    handler: src/handlers/update.handler
-    events:
-      - http:
-          path: /items/{id}
-          method: put
-          authorizer:
-            name: cognitoAuthorizer
-            type: COGNITO_USER_POOLS
-            arn: !GetAtt CognitoUserPool.Arn
-
-  delete:
-    handler: src/handlers/delete.handler
-    events:
-      - http:
-          path: /items/{id}
-          method: delete
-          authorizer:
-            name: cognitoAuthorizer
-            type: COGNITO_USER_POOLS
-            arn: !GetAtt CognitoUserPool.Arn
-
-  list:
-    handler: src/handlers/list.handler
-    events:
-      - http:
-          path: /items
-          method: get
-          authorizer:
-            name: cognitoAuthorizer
-            type: COGNITO_USER_POOLS
-            arn: !GetAtt CognitoUserPool.Arn
-
-  auth:
-    handler: src/handlers/auth.handler
-    events:
-      - http:
-          path: /auth/signup
-          method: post
-          cors: true
-      - http:
-          path: /auth/signin
-          method: post
-          cors: true 
+  - ${file(./src/functions/functions.yml)} 

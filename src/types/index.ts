@@ -18,4 +18,9 @@ export interface UserInfo {
   email: string;
 }
 
-export type LambdaHandler = (event: CustomAPIGatewayProxyEvent) => Promise<APIGatewayProxyResult>; 
+export type LambdaHandler = (event: CustomAPIGatewayProxyEvent) => Promise<APIGatewayProxyResult>;
+
+export interface AuthPayload {
+  email: string;
+  password: string;
+} 

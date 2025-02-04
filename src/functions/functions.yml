@@ -1,0 +1,75 @@
+auth:
+  handler: src/handlers/auth.handler
+  events:
+    - http:
+        path: /auth/signup
+        method: post
+        cors: true
+    - http:
+        path: /auth/signin
+        method: post
+        cors: true
+
+users:
+  create:
+    handler: src/handlers/users/create.handler
+    events:
+      - http:
+          path: /users
+          method: post
+          authorizer:
+            name: cognitoAuthorizer
+            type: COGNITO_USER_POOLS
+            arn: !GetAtt CognitoUserPool.Arn
+
+  get:
+    handler: src/handlers/users/get.handler
+    events:
+      - http:
+          path: /users/{id}
+          method: get
+          authorizer:
+            name: cognitoAuthorizer
+            type: COGNITO_USER_POOLS
+            arn: !GetAtt CognitoUserPool.Arn
+
+  list:
+    handler: src/handlers/users/list.handler
+    events:
+      - http:
+          path: /users
+          method: get
+          authorizer:
+            name: cognitoAuthorizer
+            type: COGNITO_USER_POOLS
+            arn: !GetAtt CognitoUserPool.Arn
+
+  update:
+    handler: src/handlers/users/update.handler
+    events:
+      - http:
+          path: /users/{id}
+          method: put
+          authorizer:
+            name: cognitoAuthorizer
+            type: COGNITO_USER_POOLS
+            arn: !GetAtt CognitoUserPool.Arn
+
+  delete:
+    handler: src/handlers/users/delete.handler
+    events:
+      - http:
+          path: /users/{id}
+          method: delete
+          authorizer:
+            name: cognitoAuthorizer
+            type: COGNITO_USER_POOLS
+            arn: !GetAtt CognitoUserPool.Arn
+
+docs:
+  handler: src/handlers/docs/serveOpenApiDocs.handler
+  events:
+    - http:
+        path: /api-docs
+        method: get
+        cors: true 

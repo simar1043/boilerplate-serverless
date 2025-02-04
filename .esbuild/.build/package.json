@@ -1,0 +1,10 @@
+{
+  "name": "api-boilerplate",
+  "version": "1.0.0",
+  "description": "Packaged externals for api-boilerplate",
+  "private": true,
+  "scripts": {},
+  "dependencies": {
+    "pg": "^8.13.0"
+  }
+}

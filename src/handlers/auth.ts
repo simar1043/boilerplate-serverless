@@ -1,13 +1,8 @@
 import { CognitoIdentityProvider, AuthFlowType } from '@aws-sdk/client-cognito-identity-provider';
-import { CustomAPIGatewayProxyEvent } from '../types/index.js';
+import { CustomAPIGatewayProxyEvent, AuthPayload } from '../types/index.js';
 import { success, error } from '../utils/response.js';
 
 const cognito = new CognitoIdentityProvider();
-
-interface AuthPayload {
-  email: string;
-  password: string;
-}
 
 export const handler = async (event: CustomAPIGatewayProxyEvent) => {
   try {
